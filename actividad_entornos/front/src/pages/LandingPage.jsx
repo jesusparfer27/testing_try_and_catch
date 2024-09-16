@@ -26,7 +26,8 @@ export const LandingPage = () => {
             setCommentsContent(respuesta.comments);
             console.log(respuesta);
         } catch (err) {
-            console.log(err, "error");
+            console.error(err, "error");
+            setError('No se puedieron cargar los datos. Intente más tarde.')
         }
     };
 

@@ -18,17 +18,33 @@ const totalProducts = data.length
     const getData = async () => {
         try {
             const response = await fetch(`https://pokeapi.co/api/v2/pokemon/${Math.floor(Math.random() * 801)}`);
+            if (!response.ok) {
+                throw new Error('La respuesta fue erronea');
+            }
             const data = await response.json();
-            setData(data);
-            console.log(data)
-
+            return data;
         } catch (error) {
-            console.error(error);
+            console.error('Error en el fetch de data:', error);
+            throw error;
         }
     };
 
     useEffect(() => {
-        getData()
+        const controller = new AbortController();
+
+        const fetchData = async () => {
+            try {
+                const pokemonData = await getData(controller.signal);
+                setData(pokemonData)
+            } catch (error) {
+                console.error('Error al obtener el Pokémon:', error);
+            } finally {
+                controller.abort()
+            }
+
+        };
+        fetchData();
+        return () => controller.abort()
     }, [])
 
     return (

@@ -14,20 +14,41 @@ const FakeStore = () => {
 
     useEffect(() => {
         let controller = new AbortController()
-        let options = {
-            method: 'GET',
-            headers: {
-                'Content-Type': 'Application/json'
-            },
-            signal: controller.signal
+
+        const fetchData = async () => {
+            try {
+                let options = {
+                    method: 'GET',
+                    headers: {
+                        'Content-Type': 'Application/json'
+                    },
+                    signal: controller.signal
+                }
+
+                const response = await fetch('https://fakestoreapi.com/products/', options)
+
+                if (!response.ok) {
+                    throw new Error(`Error en la solicitud: ${response.status}`)
+                }
+
+                const fetchedData = await response.json();
+                setData(fetchedData)
+
+            } catch (error) {
+                if (error.name === 'AbortError') {
+                    console.log('La solicitud fue abortada');
+                } else {
+                    console.error('Error en el fetch de productos:', error)
+                }
+                
+            }
+        };
+
+        fetchData()
+
+        return () => {
+            controller.abort()
         }
-
-        fetch('https://fakestoreapi.com/products/', options)
-            .then(res => res.json())
-            .then(data => setData(data))
-            .catch(err => console.log(err))
-            .finally(() => controller.abort())
-
     }, [])
 
     return (
@@ -47,11 +68,11 @@ const FakeStore = () => {
                     </div>
                 )).slice(firstIndex, lastIndex)}
             </div>
-            <Paginacion 
-            productsPerPage={productsPerPage} 
-            currentPage={currentPage} 
-            setCurrentPage={setCurrentPage} 
-            totalProducts={totalProducts}/>
+            <Paginacion
+                productsPerPage={productsPerPage}
+                currentPage={currentPage}
+                setCurrentPage={setCurrentPage}
+                totalProducts={totalProducts} />
         </div>
     )
 }

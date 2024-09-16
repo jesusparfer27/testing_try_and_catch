@@ -15,18 +15,36 @@ const Videojuegos = () => {
 
     const getData = async () => {
         try {
-        const response = await fetch(`https://api.rawg.io/api/games?key=3b3d36f059d14aa99642f5fa40e8aea3`);
-        const data = await response.json();
-        setData(data.results);
-        // console.log(data.results)
+            const response = await fetch(`https://api.rawg.io/api/games?key=3b3d36f059d14aa99642f5fa40e8aea3`);
+            if (!response.ok) {
+                throw new Error('La respuesta fue erronea')
+            }
+            const data = await response.json();
+            return data.results;
+        } catch (error) {
+            console.error('Error en el fetch de data:', error)
+            throw error
 
-    } catch(error) {
-        console.error(error);
-    }
-}
+        }
+    };
+
+    
 
     useEffect(() => {
-        getData()
+        const controller = new AbortController()
+
+        const fetchData = async () => {
+            try {
+                const gamesData = await getData(controller.signal);
+                setData(gamesData)
+            } catch (error) {
+                console.error('Error al obtener al Pokémon', error)
+            } finally {
+                controller.abort()
+            }
+        };
+        fetchData();
+        return () => controller.abort()
     }, [])
 
     return (
@@ -40,7 +58,7 @@ const Videojuegos = () => {
                         </figure>
                         <div className="info-product">
                             <h3>{results.name}</h3>
-                            <h3>{}</h3>
+                            <h3>{ }</h3>
                         </div>
                     </div>
                 ))}
